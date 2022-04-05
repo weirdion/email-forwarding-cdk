@@ -1,0 +1,17 @@
+[
+    {
+        "alias": "a@example.com",
+        "recipients": [
+            "a@myExistingEmail.com",
+            "b@myExistingEmail.com"
+        ],
+        "emailPrefix": "FW: "
+    },
+    {
+        "alias": "b@example.com",
+        "recipients": [
+            "b@myExistingEmail.com"
+        ],
+        "emailPrefix": ""
+    }
+]

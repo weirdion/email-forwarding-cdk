@@ -10,6 +10,8 @@ A CDK based project to use AWS SES to receive incoming mail, store it in S3 buck
 
 The `.env.example` file shows an example of the required configurations. Copy `.env.example` to `.env` file with your deploy config.
 
+The `email-map.json.example` file shows an example of the email map configuration. Copy `email-map.json.example` to `email-map.json` file with your mapping.
+
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 Before getting ready to deploy, ensure the dependencies are installed by executing the following:

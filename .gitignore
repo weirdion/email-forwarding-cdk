@@ -221,3 +221,6 @@ dist
 # Ignore all local history of files
 .history
 .ionide
+
+# Custom
+email-map.json

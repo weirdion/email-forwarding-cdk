@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { env } from 'process';
+import * as emailMap from '../email-map.json';
 
 config();
 
@@ -22,3 +23,5 @@ export const BOUNCE_DOMAIN_LIST = env.BOUNCE_DOMAIN_LIST?.split(',') ??
 
 export const BOUNCE_EMAIL_SENDER = env.BOUNCE_EMAIL_SENDER ??
     throwError('BOUNCE_EMAIL_SENDER must be defined in .env file or as an environment variable')
+
+export const EMAIL_MAP = JSON.stringify(emailMap)
