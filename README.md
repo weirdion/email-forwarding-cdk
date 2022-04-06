@@ -8,6 +8,8 @@ A CDK based project to use AWS SES to receive incoming mail, store it in S3 buck
 
 ## Build and Deploy
 
+Before starting to build and deploy, please ensure that the domain you are using is a verified identity in AWS SES.
+
 The `.env.example` file shows an example of the required configurations. Copy `.env.example` to `.env` file with your deploy config.
 
 The `email-map.json.example` file shows an example of the email map configuration. Copy `email-map.json.example` to `email-map.json` file with your mapping.

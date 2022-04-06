@@ -137,6 +137,8 @@ web_modules/
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+*.js
+*.d.ts
 
 # dotenv environment variable files
 .env
