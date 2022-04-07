@@ -32,6 +32,7 @@ import {
 } from "./env-config";
 
 import path = require("path");
+import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
 export class EmailForwardingCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -68,6 +69,18 @@ export class EmailForwardingCdkStack extends Stack {
         EMAIL_MAP_SSM: emailMapSSM.parameterName,
       },
     });
+    emailForwardLambda.addToRolePolicy(
+      new PolicyStatement({
+        sid: "EmailForawrdAccess",
+        effect: Effect.ALLOW,
+        actions: ["s3:GetObject", "ses:SendRawEmail"],
+        resources: [
+          `${bucket.bucketArn}/emails/*`,
+          `arn:aws:ses:${this.region}:${this.account}:identity/*`,
+        ],
+      })
+    );
+    emailMapSSM.grantRead(emailForwardLambda);
 
     // SES setup
 
@@ -88,10 +101,11 @@ export class EmailForwardingCdkStack extends Stack {
             new Lambda({
               function: emailForwardLambda,
               invocationType: LambdaInvocationType.EVENT,
-            })
+            }),
           ],
         },
         {
+          scanEnabled: true,
           recipients:
             typeof BOUNCE_DOMAIN_LIST === "string"
               ? [BOUNCE_DOMAIN_LIST]
