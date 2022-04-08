@@ -183,7 +183,7 @@ def send_email(message):
         log.info("send email ClientError Exception")
         output = e.response["Error"]["Message"]
     else:
-        output = f"Email sent! Message ID: {response["MessageId"]}"
+        output = f"Email sent! Message ID: {response['MessageId']}"
 
     return output
 
