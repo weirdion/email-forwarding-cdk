@@ -8,11 +8,40 @@ A CDK based project to use AWS SES to receive incoming mail, store it in S3 buck
 
 ## Build and Deploy
 
-Before starting to build and deploy, please ensure that the domain you are using is a verified identity in AWS SES.
+Before starting to build and deploy, ***please ensure that the domain and emails you are using are [verified identities] in AWS SES***.
 
 The `.env.example` file shows an example of the required configurations. Copy `.env.example` to `.env` file with your deploy config.
 
+```ini
+RECIPIENT_DOMAIN_LIST=a,b,c,d
+BOUNCE_DOMAIN_LIST=a
+BOUNCE_EMAIL_SENDER=no-reply@example.com
+```
+
+
 The `email-map.json.example` file shows an example of the email map configuration. Copy `email-map.json.example` to `email-map.json` file with your mapping.
+
+```json
+[
+    {
+        "from_sender": "no-reply@example.com",
+        "alias": "a@example.com",
+        "recipients": [
+            "a@myExistingEmail.com",
+            "b@myExistingEmail.com"
+        ],
+        "email_prefix": "FW: "
+    },
+    {
+        "from_sender": "my-sender@example.com",
+        "alias": "b@example.com",
+        "recipients": [
+            "b@myExistingEmail.com"
+        ],
+        "email_prefix": ""
+    }
+]
+```
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
@@ -55,3 +84,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+[verified identities]: <https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html>
