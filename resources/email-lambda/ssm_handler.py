@@ -52,4 +52,4 @@ class SSMHandler:
             if sanitized_to_address == map.alias:
                 log.info(f"Mapping To address from: {to_address} -> {map.alias} -> {map.recipients}")
                 return map
-            return None
+        return None
