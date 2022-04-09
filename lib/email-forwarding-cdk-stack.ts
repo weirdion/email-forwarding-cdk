@@ -34,7 +34,10 @@ import {
 import path = require("path");
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
+const s3BucketPath: string = "emails";
+
 export class EmailForwardingCdkStack extends Stack {
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -64,9 +67,12 @@ export class EmailForwardingCdkStack extends Stack {
       layers: [powertoolsLayer],
       tracing: Tracing.ACTIVE,
       environment: {
+        POWERTOOLS_SERVICE_NAME: "EmailForwardLambda",
+        LOG_LEVEL: "INFO",
         REGION: this.region,
         BUCKET_NAME: bucket.bucketName,
         EMAIL_MAP_SSM: emailMapSSM.parameterName,
+        EMAIL_S3_PREFIX: s3BucketPath,
       },
     });
     emailForwardLambda.addToRolePolicy(
@@ -75,7 +81,7 @@ export class EmailForwardingCdkStack extends Stack {
         effect: Effect.ALLOW,
         actions: ["s3:GetObject", "ses:SendRawEmail"],
         resources: [
-          `${bucket.bucketArn}/emails/*`,
+          `${bucket.bucketArn}/${s3BucketPath}/*`,
           `arn:aws:ses:${this.region}:${this.account}:identity/*`,
         ],
       })
@@ -89,6 +95,7 @@ export class EmailForwardingCdkStack extends Stack {
     const ses = new ReceiptRuleSet(this, "SESRuleSet", {
       rules: [
         {
+          scanEnabled: true,
           recipients:
             typeof RECIPIENT_DOMAIN_LIST === "string"
               ? [RECIPIENT_DOMAIN_LIST]
@@ -96,7 +103,7 @@ export class EmailForwardingCdkStack extends Stack {
           actions: [
             new S3({
               bucket,
-              objectKeyPrefix: "emails/",
+              objectKeyPrefix: `${s3BucketPath}/`,
             }),
             new Lambda({
               function: emailForwardLambda,
