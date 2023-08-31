@@ -51,12 +51,11 @@ export const loadDomainMap = (): DomainMapConfig[] => {
       }
 
       // check if the emails are valid
-      if (domainMap.bounceEmail === undefined || domainMap.emails === undefined) {
-        throw new Error('email is invalid');
-      }
-      for (const email of domainMap.emails) {
-        if (email.fromSender === undefined || email.alias === undefined || email.recipients === undefined || email.subjectPrefix === undefined) {
-          throw new Error('email is invalid');
+      if (domainMap.bounceEmail !== undefined && domainMap.emails !== undefined) {
+        for (const email of domainMap.emails) {
+          if (email.fromSender === undefined || email.alias === undefined || email.recipients === undefined || email.subjectPrefix === undefined) {
+            throw new Error('email is invalid');
+          }
         }
       }
 
