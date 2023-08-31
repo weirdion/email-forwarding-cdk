@@ -4,12 +4,14 @@
 
 A CDK based project with two main features:
 * Domain redirection
-  * provision S3 redirection based on SSM map
+  * provision S3 redirection
   * use CloudFront to add https on top of S3
 * Email alias forwarding
   * use SES to receive incoming mail
   * store it in S3 bucket
   * leverage Lambda to forward the email based on a map stored in SSM
+
+Worthwhile reading for understanding concepts: [SES email receiving concepts].
 
 <!-- INSERT ARCHITECTURE DIAGRAM -->
 
@@ -21,24 +23,28 @@ The `domain-map.json.example` file shows an example of the email map configurati
 <br>Copy `domain-map.json.example` to `domain-map.json` file with your mapping.
 
 ```json5
-{
-    // hosted zone name
-    "example.com": {
+[
+    {
+        // hosted zone name
+        "hostZoneName": "example.com",
         // hosted zone id
-        "hosted_zone_id": "ABCD1234",
+        "hostedZoneId": "ABCD1234",
         // 301 https redirection (using S3 + Cloudfront)
-        "redirects": {
-            // dev.example.com -> dev.to
-            "dev.example.com": "dev.to"
-        },
+        "redirects": [
+          // dev.example.com -> dev.to
+          {
+              "sourceDomain": "dev.example.com",
+              "targetDomain": "dev.to"
+          }
+        ],
         // bounce email of emails below, only required if emails is non-empty
-        "bounce_email": "no-reply@example.com",
+        "bounceEmail": "no-reply@example.com",
         // emails aliases to forward, bounce_email must be set
         "emails": [
             {
                 // Email address that will be used as "FROM" to receiving email
                 // reply-to email will be the original sender's reply-to email
-                "from_sender": "no-reply@example.com",
+                "fromSender": "no-reply@example.com",
                 // email address to capture as recipient
                 // supports plus addressing, a+tag@example, a+tag2@example both would match with a@example.com
                 "alias": "a@example.com",
@@ -50,11 +56,11 @@ The `domain-map.json.example` file shows an example of the email map configurati
                 // prefix to add to the subject line, usually for visually categorizing types of emails for this alias
                 // can be empty string or any arbitrary string of less than 13 characters
                 // a space is added while joining existing subject and prefix
-                "subject_prefix": "[Category1]"
+                "subjectPrefix": "[Category1]"
             }
         ]
     }
-}
+]
 ```
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
@@ -101,4 +107,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+[SES email receiving concepts]: <https://docs.aws.amazon.com/ses/latest/dg/receiving-email-concepts.html>
 [verified identities]: <https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html>

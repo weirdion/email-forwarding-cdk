@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/email-forwarding-cdk.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/domain-companion-cdk.ts",
   "watch": {
     "include": [
       "**"

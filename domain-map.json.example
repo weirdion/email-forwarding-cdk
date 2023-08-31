@@ -1,20 +1,23 @@
-{
-    "example.com": {
-        "hosted_zone_id": "ABCD1234",
-        "redirects": {
-            "dev.example.com": "dev.to"
-        },
-        "bounce_email": "no-reply@example.com",
+[
+    {
+        "hostZoneName": "example.com",
+        "hostedZoneId": "ABCD1234",
+        "redirects": [
+            {
+                "sourceDomain": "dev.example.com",
+                "targetDomain": "dev.to"
+            }
+        ],
+        "bounceEmail": "no-reply@example.com",
         "emails": [
             {
-                "from_sender": "no-reply@example.com",
+                "fromSender": "no-reply@example.com",
                 "alias": "a@example.com",
                 "recipients": [
-                    "a@myExistingEmail.com",
-                    "b@myExistingEmail.com"
+                    "a@myExistingEmail.com"
                 ],
-                "subject_prefix": "[Category1]"
+                "subjectPrefix": "FW: "
             }
         ]
     }
-}
+]
