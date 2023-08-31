@@ -1,0 +1,23 @@
+[
+    {
+        "hostZoneName": "example.com",
+        "hostedZoneId": "ABCD1234",
+        "redirects": [
+            {
+                "sourceDomain": "dev.example.com",
+                "targetDomain": "dev.to"
+            }
+        ],
+        "bounceEmail": "no-reply@example.com",
+        "emails": [
+            {
+                "fromSender": "no-reply@example.com",
+                "alias": "a@example.com",
+                "recipients": [
+                    "a@myExistingEmail.com"
+                ],
+                "subjectPrefix": "FW: "
+            }
+        ]
+    }
+]
