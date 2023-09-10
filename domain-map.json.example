@@ -4,7 +4,7 @@
         "hostedZoneId": "ABCD1234",
         "redirects": [
             {
-                "sourceDomain": "dev.example.com",
+                "subDomain": "dev",
                 "targetDomain": "dev.to"
             }
         ],
