@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 export interface RedirectConfig {
-  readonly sourceDomain: string;
+  readonly subDomain: string;
   readonly targetDomain: string;
 }
 
@@ -25,7 +25,6 @@ export const loadDomainMap = (): DomainMapConfig[] => {
   const rawdata = fs.readFileSync('domain-map.json', 'utf-8');
   const domainMaps = JSON.parse(rawdata);
 
-  console.log(domainMaps);
   if (domainMaps === undefined) {
     throw new Error('domainMaps is undefined or empty');
   }
@@ -36,7 +35,6 @@ export const loadDomainMap = (): DomainMapConfig[] => {
   for (const domainMapKey in domainMaps) {
     if (domainMaps.hasOwnProperty(domainMapKey)) {
       const domainMap = domainMaps[domainMapKey];
-      console.log(domainMap);
 
       // check if the domainMap is valid
       if (domainMap.hostZoneName === undefined || domainMap.hostedZoneId === undefined || domainMap.redirects === undefined) {
@@ -45,7 +43,7 @@ export const loadDomainMap = (): DomainMapConfig[] => {
 
       // check if the redirects are valid
       for (const redirect of domainMap.redirects) {
-        if (redirect.sourceDomain === undefined || redirect.targetDomain === undefined) {
+        if (redirect.subDomain === undefined || redirect.targetDomain === undefined) {
           throw new Error('redirect is invalid');
         }
       }

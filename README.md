@@ -29,11 +29,11 @@ The `domain-map.json.example` file shows an example of the email map configurati
         "hostZoneName": "example.com",
         // hosted zone id
         "hostedZoneId": "ABCD1234",
-        // 301 https redirection (using S3 + Cloudfront)
+        // 301 https redirection (Cloudfront + Lambda@Edge)
         "redirects": [
           // dev.example.com -> dev.to
           {
-              "sourceDomain": "dev.example.com",
+              "subDomain": "dev.example.com",
               "targetDomain": "dev.to"
           }
         ],
