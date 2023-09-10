@@ -3,6 +3,7 @@ import * as fs from "fs";
 export interface RedirectConfig {
   readonly subDomain: string;
   readonly targetDomain: string;
+  readonly uriMap: {[key: string]: string};
 }
 
 export interface EmailConfig {
