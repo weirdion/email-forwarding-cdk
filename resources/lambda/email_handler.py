@@ -24,7 +24,7 @@ import boto3
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
 
-from ssm_handler import SSMHandler, EmailForwardMap
+from ssm_handler import SSMHandler, EmailConfig
 
 region = os.environ["REGION"]
 incoming_email_bucket = os.environ["BUCKET_NAME"]
@@ -79,7 +79,7 @@ def create_message(file_dict: Dict, ssm_handler: SSMHandler):
     log.info(f"Subject: {subject}")
 
     # Match receiving address with alias email map
-    email_fwd_map: EmailForwardMap = ssm_handler.get_recipients_for_address(
+    email_fwd_map: EmailConfig = ssm_handler.get_recipients_for_address(
         recipient_address
     )
     if not email_fwd_map:
@@ -154,7 +154,7 @@ def create_message(file_dict: Dict, ssm_handler: SSMHandler):
     # filename = re.sub("[^0-9a-zA-Z]+", "_", subject)
 
     # Add subject, from and to lines.
-    msg["Subject"] = f"{email_fwd_map.email_prefix}{subject}"
+    msg["Subject"] = f"{email_fwd_map.subject_prefix}{subject}"
     msg["From"] = email_fwd_map.from_sender
     msg["To"] = fwd_recipients
     # msg["Cc"] = recipient_cc_address

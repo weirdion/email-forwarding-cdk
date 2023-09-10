@@ -30,9 +30,10 @@ export class DomainRedirectionStack extends Stack {
     new CfnOutput(this, 'DomainMapParameterName', { value: this.domainMapSSM.parameterName });
 
     const redirectLambda = new cloudfront.experimental.EdgeFunction(this, 'Redirect', {
+      functionName: 'DomainRedirect',
       runtime: Runtime.PYTHON_3_11,
-      handler: 'index.handler',
-      code: Code.fromAsset(path.join(__dirname, '../resources/redirect-lambda')),
+      handler: 'domain-lambda.handler',
+      code: Code.fromAsset(path.join(__dirname, '../resources/lambda')),
     });
     this.domainMapSSM.grantRead(redirectLambda);
 

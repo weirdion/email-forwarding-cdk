@@ -41,8 +41,8 @@ export class EmailForwardingStack extends Stack {
     const emailForwardLambda = new Function(this, 'EmailForwarding', {
       runtime: Runtime.PYTHON_3_11,
       architecture: Architecture.ARM_64,
-      handler: 'index.handler',
-      code: Code.fromAsset(path.join(__dirname, '../resources/email-lambda')),
+      handler: 'email-lambda.handler',
+      code: Code.fromAsset(path.join(__dirname, '../resources/lambda')),
       layers: [powertoolsLayer],
       environment: {
         POWERTOOLS_SERVICE_NAME: 'EmailForwardLambda',
