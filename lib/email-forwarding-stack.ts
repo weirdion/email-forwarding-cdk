@@ -1,5 +1,5 @@
 import {Stack, StackProps} from 'aws-cdk-lib';
-import {Architecture, Code, Function, LayerVersion, Runtime,} from 'aws-cdk-lib/aws-lambda';
+import {Architecture, Code, Function, ILayerVersion, LayerVersion, Runtime,} from 'aws-cdk-lib/aws-lambda';
 import {BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption,} from 'aws-cdk-lib/aws-s3';
 import {ReceiptRuleOptions, ReceiptRuleSet} from 'aws-cdk-lib/aws-ses';
 import {Bounce, BounceTemplate, Lambda, LambdaInvocationType, S3} from 'aws-cdk-lib/aws-ses-actions';
@@ -15,6 +15,7 @@ const s3BucketPath: string = 'emails';
 interface EmailForwardingProps extends StackProps {
   domainMapConfig: DomainMapConfig[];
   emailForwardingDomains: string[];
+  domainMapParameterName: string;
 }
 
 export class EmailForwardingStack extends Stack {
@@ -26,6 +27,7 @@ export class EmailForwardingStack extends Stack {
       accessControl: BucketAccessControl.PRIVATE,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
       versioned: false,
     });
 
@@ -33,13 +35,8 @@ export class EmailForwardingStack extends Stack {
     const powertoolsLayer = LayerVersion.fromLayerVersionArn(
       this,
       'LambdaPowertools',
-      `arn:aws:lambda:${this.region}:017000801446:layer:AWSLambdaPowertoolsPython:40`
+      `arn:aws:lambda:${this.region}:017000801446:layer:AWSLambdaPowertoolsPythonV2:42`
     );
-
-    const emailMapSSM = new StringParameter(this, 'EmailForwardingMap', {
-      stringValue: JSON.stringify(props?.domainMapConfig),
-      parameterName: 'EmailForwardingMap',
-    });
 
     const emailForwardLambda = new Function(this, 'EmailForwarding', {
       runtime: Runtime.PYTHON_3_11,
@@ -52,7 +49,7 @@ export class EmailForwardingStack extends Stack {
         LOG_LEVEL: 'INFO',
         REGION: this.region,
         BUCKET_NAME: bucket.bucketName,
-        EMAIL_MAP_SSM: emailMapSSM.parameterName,
+        EMAIL_MAP_SSM: props.domainMapParameterName,
         EMAIL_S3_PREFIX: s3BucketPath,
       },
     });
@@ -67,7 +64,13 @@ export class EmailForwardingStack extends Stack {
         ],
       })
     );
-    emailMapSSM.grantRead(emailForwardLambda);
+
+    const domainMapSSM = StringParameter.fromStringParameterName(
+      this,
+      'DomainMapSSM',
+      props.domainMapParameterName
+    );
+    domainMapSSM.grantRead(emailForwardLambda);
 
     // SES setup
 
