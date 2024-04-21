@@ -9,10 +9,10 @@ ssm_handler = SSMHandler()
 def handler(event, context):
     log.info(f"Event: {event}")
     log.info(f"Context: {context}")
-    log.info(f"SSMHandler: {len(ssm_handler.domain_map_config)}")
+    log.info(f"SSMHandler: {ssm_handler.domain_map_config}")
     return {
-        "status": '301',
-        "statusDescription": 'Permanently Moved',
+        "status": '302',
+        "statusDescription": 'Found Moved',
         "headers": {
           "location": [{
             "key": 'Location',
