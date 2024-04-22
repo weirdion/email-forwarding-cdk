@@ -1,7 +1,7 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Certificate, CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
-import { Distribution, Function, FunctionCode, FunctionEventType, FunctionRuntime, HttpVersion, ImportSource, KeyValueStore, LambdaEdgeEventType, PriceClass, ResponseHeadersPolicy, SSLMethod, SecurityPolicyProtocol, ViewerProtocolPolicy, experimental } from "aws-cdk-lib/aws-cloudfront";
-import { HttpOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
+import * as cf from "aws-cdk-lib/aws-cloudfront";
+import { S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Code, Runtime } from "aws-cdk-lib/aws-lambda";
 import { ARecord, HostedZone, IHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
@@ -10,7 +10,6 @@ import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import * as path from "path";
 import { DomainMapConfig } from "./domain-map-config";
-import { readFile, readFileSync } from "fs";
 
 interface DomainRedirectionProps extends StackProps {
   domainMapConfig: DomainMapConfig[];
@@ -19,6 +18,8 @@ interface DomainRedirectionProps extends StackProps {
 export class DomainRedirectionStack extends Stack {
 
   private s3OriginBucket: Bucket;
+  public readonly domainMapSSM: StringParameter;
+
 
   constructor(scope: Construct, id: string, props: DomainRedirectionProps) {
     super(scope, id, props);
@@ -27,16 +28,22 @@ export class DomainRedirectionStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: BucketEncryption.S3_MANAGED,
-    })
-
-    const redirectLambda = new Function(this, 'Redirect', {
-      functionName: 'DomainRedirect',
-      runtime: FunctionRuntime.JS_2_0,
-      code: FunctionCode.fromFile({
-        filePath: path.join(__dirname, '../resources/lambda/domain-redirect.js'),
-      }),
-      keyValueStore: keyValueStore,
     });
+
+    this.domainMapSSM = new StringParameter(this, 'DomainMapConfig', {
+      parameterName: 'DomainMapConfig',
+      simpleName: true,
+      stringValue: JSON.stringify(props.domainMapConfig),
+    });
+    new CfnOutput(this, 'DomainMapParameterName', { value: this.domainMapSSM.parameterName });
+
+
+    const redirectLambda = new cf.experimental.EdgeFunction(this, 'DomainRedirect', {
+      code: Code.fromAsset(path.join(__dirname, '../resources/lambda')),
+      handler: 'domain_redirect.handler',
+      runtime: Runtime.PYTHON_3_11,
+    });
+    this.domainMapSSM.grantRead(redirectLambda);
 
     props.domainMapConfig.map((domainName) => {
       console.log(`Parsing domain config: ${domainName.hostZoneName}`);
@@ -71,26 +78,26 @@ export class DomainRedirectionStack extends Stack {
     });
   }
 
-  createDistribution(identifier: string, sourceDomains: string[], redirectLambda: Function, hostedZone: IHostedZone,
-  ): Distribution {
+  createDistribution(identifier: string, sourceDomains: string[], redirectLambda: cf.experimental.EdgeFunction, hostedZone: IHostedZone,
+  ): cf.Distribution {
     console.log(`sourceDomains: ${sourceDomains}`)
-    const distribution = new Distribution(this, `${identifier}Distribution`, {
-      priceClass: PriceClass.PRICE_CLASS_100,
-      httpVersion: HttpVersion.HTTP2,
-      sslSupportMethod: SSLMethod.SNI,
+    const distribution = new cf.Distribution(this, `${identifier}Distribution`, {
+      priceClass: cf.PriceClass.PRICE_CLASS_100,
+      httpVersion: cf.HttpVersion.HTTP2,
+      sslSupportMethod: cf.SSLMethod.SNI,
       defaultBehavior: {
         origin: new S3Origin(this.s3OriginBucket),
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        responseHeadersPolicy: ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS,
-        functionAssociations: [{
-          eventType: FunctionEventType.VIEWER_REQUEST,
-          function: redirectLambda,
+        viewerProtocolPolicy: cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        responseHeadersPolicy: cf.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS,
+        edgeLambdas: [{
+          eventType: cf.LambdaEdgeEventType.VIEWER_REQUEST,
+          functionVersion: redirectLambda.currentVersion,
         }],
       },
-      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
+      minimumProtocolVersion: cf.SecurityPolicyProtocol.TLS_V1_2_2021,
       domainNames: sourceDomains,
       certificate: this.getAcmCertificateArn(identifier, hostedZone, sourceDomains),
-      enableLogging: true,
+      enableLogging: false,
     });
 
     new CfnOutput(this, identifier, { value: distribution.domainName });

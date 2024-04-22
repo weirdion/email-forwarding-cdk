@@ -28,8 +28,9 @@ const domainRedirectionStack = new DomainRedirectionStack(app, 'DomainRedirectio
 
 if (emailForwardingDomains.length > 0) {
   new EmailForwardingStack(app, 'EmailForwardingStack', {
-    domainMapConfig,
-    emailForwardingDomains,
+    domainMapConfig: domainMapConfig,
+    emailForwardingDomains: emailForwardingDomains,
+    domainMapParameterName: domainRedirectionStack.domainMapSSM.parameterName,
     env
   });
 }

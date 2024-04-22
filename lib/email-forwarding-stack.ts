@@ -1,13 +1,13 @@
-import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib';
-import {Architecture, Code, Function, ILayerVersion, LayerVersion, Runtime,} from 'aws-cdk-lib/aws-lambda';
-import {BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption,} from 'aws-cdk-lib/aws-s3';
-import {ReceiptRuleOptions, ReceiptRuleSet} from 'aws-cdk-lib/aws-ses';
-import {Bounce, BounceTemplate, Lambda, LambdaInvocationType, S3} from 'aws-cdk-lib/aws-ses-actions';
-import {Topic} from 'aws-cdk-lib/aws-sns';
-import {StringParameter} from 'aws-cdk-lib/aws-ssm';
-import {Construct} from 'constructs';
-import {DomainMapConfig} from './domain-map-config';
-import {Effect, PolicyStatement} from 'aws-cdk-lib/aws-iam';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Architecture, Code, Function, LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption, } from 'aws-cdk-lib/aws-s3';
+import { ReceiptRuleOptions, ReceiptRuleSet } from 'aws-cdk-lib/aws-ses';
+import { Bounce, BounceTemplate, Lambda, LambdaInvocationType, S3 } from 'aws-cdk-lib/aws-ses-actions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Construct } from 'constructs';
+import { DomainMapConfig } from './domain-map-config';
 import path = require('path');
 
 const s3BucketPath: string = 'emails';
@@ -15,6 +15,7 @@ const s3BucketPath: string = 'emails';
 interface EmailForwardingProps extends StackProps {
   domainMapConfig: DomainMapConfig[];
   emailForwardingDomains: string[];
+  domainMapParameterName: string;
 }
 
 export class EmailForwardingStack extends Stack {
@@ -29,13 +30,6 @@ export class EmailForwardingStack extends Stack {
       enforceSSL: true,
       versioned: false,
     });
-
-    const domainMapSSM = new StringParameter(this, 'DomainMapConfig', {
-      parameterName: 'DomainMapConfig',
-      simpleName: true,
-      stringValue: JSON.stringify(props.domainMapConfig),
-    });
-    new CfnOutput(this, 'DomainMapParameterName', { value: domainMapSSM.parameterName });
 
     // Email Forwarding Lambda
     const powertoolsLayer = LayerVersion.fromLayerVersionArn(
@@ -55,7 +49,7 @@ export class EmailForwardingStack extends Stack {
         LOG_LEVEL: 'INFO',
         REGION: this.region,
         BUCKET_NAME: bucket.bucketName,
-        EMAIL_MAP_SSM: domainMapSSM.parameterName,
+        EMAIL_MAP_SSM: props.domainMapParameterName,
         EMAIL_S3_PREFIX: s3BucketPath,
       },
     });
@@ -71,6 +65,11 @@ export class EmailForwardingStack extends Stack {
       })
     );
 
+    const domainMapSSM = StringParameter.fromStringParameterName(
+      this,
+      'DomainMapSSM',
+      props.domainMapParameterName
+    );
     domainMapSSM.grantRead(emailForwardLambda);
 
     // SES setup
