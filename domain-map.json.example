@@ -5,7 +5,10 @@
         "redirects": [
             {
                 "subDomain": "dev",
-                "targetDomain": "dev.to"
+                "targetDomain": "dev.to",
+                "uri": {
+                    "test", "dev.to/about"
+                }
             }
         ],
         "bounceEmail": "no-reply@example.com",

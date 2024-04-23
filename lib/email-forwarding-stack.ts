@@ -1,13 +1,13 @@
-import {Stack, StackProps} from 'aws-cdk-lib';
-import {Architecture, Code, Function, ILayerVersion, LayerVersion, Runtime,} from 'aws-cdk-lib/aws-lambda';
-import {BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption,} from 'aws-cdk-lib/aws-s3';
-import {ReceiptRuleOptions, ReceiptRuleSet} from 'aws-cdk-lib/aws-ses';
-import {Bounce, BounceTemplate, Lambda, LambdaInvocationType, S3} from 'aws-cdk-lib/aws-ses-actions';
-import {Topic} from 'aws-cdk-lib/aws-sns';
-import {StringParameter} from 'aws-cdk-lib/aws-ssm';
-import {Construct} from 'constructs';
-import {DomainMapConfig} from './domain-map-config';
-import {Effect, PolicyStatement} from 'aws-cdk-lib/aws-iam';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Architecture, Code, Function, LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption, } from 'aws-cdk-lib/aws-s3';
+import { ReceiptRuleOptions, ReceiptRuleSet } from 'aws-cdk-lib/aws-ses';
+import { Bounce, BounceTemplate, Lambda, LambdaInvocationType, S3 } from 'aws-cdk-lib/aws-ses-actions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Construct } from 'constructs';
+import { DomainMapConfig } from './domain-map-config';
 import path = require('path');
 
 const s3BucketPath: string = 'emails';
@@ -41,8 +41,8 @@ export class EmailForwardingStack extends Stack {
     const emailForwardLambda = new Function(this, 'EmailForwarding', {
       runtime: Runtime.PYTHON_3_11,
       architecture: Architecture.ARM_64,
-      handler: 'index.handler',
-      code: Code.fromAsset(path.join(__dirname, '../resources/email-lambda')),
+      handler: 'email-lambda.handler',
+      code: Code.fromAsset(path.join(__dirname, '../resources/lambda')),
       layers: [powertoolsLayer],
       environment: {
         POWERTOOLS_SERVICE_NAME: 'EmailForwardLambda',

@@ -31,9 +31,18 @@ The `domain-map.json.example` file shows an example of the email map configurati
         "hostedZoneId": "ABCD1234",
         // 301 https redirection (Cloudfront + Lambda@Edge)
         "redirects": [
-          // dev.example.com -> dev.to
           {
-              "subDomain": "dev.example.com",
+              // example.com -> dev.to
+              "subDomain": ".",
+              "targetDomain": "dev.to",
+              "uri": {
+                // example.com/test -> dev.to/about
+                "test": "dev.to/about"
+              }
+          },
+          {
+              // dev.example.com -> dev.to
+              "subDomain": "dev",
               "targetDomain": "dev.to"
           }
         ],
