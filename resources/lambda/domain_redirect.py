@@ -2,7 +2,7 @@ import re
 
 from ssm_handler import SSMHandler
 
-DOMAIN_REGEX = re.compile(r"([a-zA-Z0-9-.]+\.)*([a-zA-Z0-9-]+\.[a-zA-Z]+)(\/[a-zA-Z0-9-/]+)*")
+DOMAIN_REGEX = re.compile(r"([a-zA-Z0-9-.]+\.)*([a-zA-Z0-9-]+\.[a-zA-Z]+)")
 DEFAULT_TARGET = "github.com/weirdion"
 
 def handler(event, context):
@@ -20,10 +20,12 @@ def handler(event, context):
 
 	ssm_handler = SSMHandler()
 
-	_sub_domain, _domain, _uri_path = re.fullmatch(DOMAIN_REGEX, host_value).groups()
-	print(f"Matched groups: {_sub_domain} {_domain} {_uri_path}")
-	if _sub_domain:
+	_sub_domain, _domain = re.fullmatch(DOMAIN_REGEX, host_value).groups()
+	_uri_path = request["uri"]
+	print(f"Matched groups: {_sub_domain} {_domain}")
+	if not _sub_domain:
 		_sub_domain = "."  # mark it as root domain to match domain-map
+	else:
 		_sub_domain = _sub_domain.strip(".")
 	if not _uri_path:
 		_uri_path = ""
@@ -36,10 +38,12 @@ def handler(event, context):
 			for r in d.redirects:
 				if _sub_domain.casefold().endswith(r.sub_domain.casefold()):
 					print(f"Found Redirect: {r.sub_domain} -> {r.target_domain}")
-					target_host = f"{r.target_domain}{_uri_path}"
+					target_host = f"{r.target_domain}"
 					break
 			break
 
+	# attach _uri_path from original request
+	target_host = f"{target_host}{_uri_path}"
 
 	if not target_host.startswith("https://"):
 		target_host = f"https://{target_host}"
